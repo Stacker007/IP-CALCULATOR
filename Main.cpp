@@ -24,7 +24,7 @@ int main() {
 	int broadCast[4];
 	int hostMin[4];
 	int hostMax[4];
-	cout << "Введите IP адрес  (октэты вводятся в десятичной системе через Enter): ";
+	cout << "Введите IP адрес  (октэты вводятся в десятичной системе через Enter):\n";
 	for (int i = 0; i < 4; i++) {
 		int tmp;
 		do {
