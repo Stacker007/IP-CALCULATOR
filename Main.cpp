@@ -1,8 +1,11 @@
 /*IP CALCULATOR*/
+//Проверка на полноту ввода
 
 #include <iostream>
 #include <bitset>
 using namespace std;
+bool stringIPtoARR(char ipStr[], int *ip);
+bool verifySimbol(char strIP[]);
 void print2CC(int *a);
 void print10CC(int *a);
 void printROW(int*a);
@@ -16,7 +19,8 @@ int hosTS(int *hostMin, int *hostMax);
 
 int main() {
 	setlocale(LC_ALL, "rus");
-	int ip[4] ;
+	int ip[4];
+	char ipStr[15];
 	int mask;
 	int arrMask[4] = {};
 	int netWORK[4];
@@ -24,7 +28,19 @@ int main() {
 	int broadCast[4];
 	int hostMin[4];
 	int hostMax[4];
-	cout << "Введите IP адрес  (октэты вводятся в десятичной системе через Enter):\n";
+	bool flag = true;
+
+	do {
+		cout << "Введите IP адрес:\n";
+		cin >> ipStr;
+		flag = verifySimbol(ipStr);
+		if (flag) flag = stringIPtoARR(ipStr, ip);
+		if (!flag) cout << "Adress not valid! Try again\n";
+	} while (!flag);
+	
+
+
+	/*cout << "Введите IP адрес  (октэты вводятся в десятичной системе через Enter):\n";
 	for (int i = 0; i < 4; i++) {
 		int tmp;
 		do {
@@ -32,13 +48,13 @@ int main() {
 			if (tmp < 0 || tmp > 255)cout << "Недопустимое значение! Введите еще раз: ";
 		} while (tmp < 0 || tmp > 255);
 		ip[i] = tmp;
-	}
+	}*/
 	cout << "Введите маску подсети /";
 	do {
 		cin >> mask;
 		if (mask < 0 || mask > 32)cout << "Недопустимое значение! Введите еще раз /";
 	} while (mask < 0 || mask > 32);
-	cout << endl<< "IP Adress: ";//9
+	cout << endl << "IP Adress: ";//9
 	printROW(ip);
 	cout << endl << "Bitmask:   " << mask << endl;//7
 	maskDecoder(arrMask, mask);
@@ -70,7 +86,7 @@ int main() {
 	printROW(hostMax);
 	cout << endl;
 
-	cout << "Hosts:      " << hosTS(hostMin,hostMax) << endl;//5
+	cout << "Hosts:      " << hosTS(hostMin, hostMax) << endl;//5
 
 	system("pause");
 	return 0;
@@ -84,7 +100,7 @@ void printROW(int*a) {
 }
 void print2CC(int *a) {
 	for (int i = 0; i < 4; i++) {
-		cout << bitset<4>(*(a+i) / 16) << " " << bitset<4>(*(a + i) % 16);
+		cout << bitset<4>(*(a + i) / 16) << " " << bitset<4>(*(a + i) % 16);
 		if (i < 3) cout << ".";
 	}
 
@@ -97,7 +113,7 @@ void print10CC(int *a) {
 
 }
 void maskDecoder(int *arrMask, int mask) {
-	if (mask < 9 ) {
+	if (mask < 9) {
 		*arrMask = 255;
 		mask = 8 - mask;
 		int deg = 1;
@@ -114,7 +130,7 @@ void maskDecoder(int *arrMask, int mask) {
 		mask = 16 - mask;
 		int deg = 1;
 		while (mask) {
-			*(arrMask+1) = *(arrMask+1) - deg;
+			*(arrMask + 1) = *(arrMask + 1) - deg;
 			deg *= 2;
 			mask--;
 		}
@@ -133,26 +149,26 @@ void maskDecoder(int *arrMask, int mask) {
 		}
 		return;
 	}
-	
-		*arrMask = 255;
-		*(arrMask + 1) = 255;
-		*(arrMask + 2) = 255;
-		*(arrMask + 3) = 255;
-		mask = 32 - mask;
-		int deg = 1;
-		while (mask) {
-			*(arrMask + 3) = *(arrMask + 3) - deg;
-			deg *= 2;
-			mask--;
-		}
-		return;
-	
+
+	*arrMask = 255;
+	*(arrMask + 1) = 255;
+	*(arrMask + 2) = 255;
+	*(arrMask + 3) = 255;
+	mask = 32 - mask;
+	int deg = 1;
+	while (mask) {
+		*(arrMask + 3) = *(arrMask + 3) - deg;
+		deg *= 2;
+		mask--;
+	}
+	return;
+
 }
 void netWork(int *ip, int *arrMask, int *netWork) {
 	for (int i = 0; i < 4; i++)*(netWork + i) = *(ip + i)&*(arrMask + i);
 }
 void wildCARD(int *arrMask, int *wildCard) {
-	for (int i = 0; i < 4; i++)*(wildCard + i) =255-*(arrMask + i);
+	for (int i = 0; i < 4; i++)*(wildCard + i) = 255 - *(arrMask + i);
 }
 
 void broadCAST(int *arrMask, int *wildCard, int *broadCast) {
@@ -170,11 +186,71 @@ void hostMAX(int *broadCast, int *hostMax) {
 int hosTS(int *hostMin, int *hostMax) {
 	int prod = 1;
 	for (int i = 0; i < 3; i++) {
-		
+
 		prod *= *(hostMax + i) - *(hostMin + i) + 1;
-		
+
 	}
 	prod *= *(hostMax + 3) - *(hostMin + 3) + 3;
 	prod -= 2;
 	return prod;
+}
+bool stringIPtoARR(char ipStr[], int *ip) {
+	//char ipStr[] = "19.268.1.1";
+	char oct1Str[3], oct2Str[3], oct3Str[3], oct4Str[3];
+	bool flag = true;
+	int oct1, oct2, oct3, oct4;
+	int i = 0;
+	while (*(ipStr + i) != '.') {
+		*(oct1Str + i) = *(ipStr + i);
+		i++;
+	}
+	i++;
+	int j = 0;
+	while (*(ipStr + i) != '.') {
+		*(oct2Str + j++) = *(ipStr + i);
+		i++;
+	}
+	i++;
+	j = 0;
+	while (*(ipStr + i) != '.') {
+		*(oct3Str + j++) = *(ipStr + i);
+		i++;
+	}
+	i++;
+	j = 0;
+	int tmp = strlen(ipStr);
+	while (i < strlen(ipStr)) {
+		*(oct4Str + j++) = *(ipStr + i);
+		i++;
+	}
+	ip[0] = atoi(oct1Str);
+	ip[1] = atoi(oct2Str);
+	ip[2] = atoi(oct3Str);
+	ip[3] = atoi(oct4Str);
+	for (int i = 0; i < 4; i++) {
+		if (ip[i] < 0 || ip[i]>255) return false;
+	}
+	return true;
+}
+bool verifySimbol(char strIP[]) {
+
+	int i = 0, j = 0;
+	bool flag = true;
+	while (i < strlen(strIP))
+	{
+		if (*(strIP + i) < 46 || *(strIP + i) > 57 || *(strIP + i) == 47) {
+			return false;			
+		}
+		if (j > 3) {
+			return false;
+		}
+		if (*(strIP + i) == '.'&&*(strIP + i + 1) == '.') {
+			return false;
+		}
+		j++;
+		if (*(strIP + i) == '.') j = 0;
+		i++;
+	}
+
+	return true;
 }
